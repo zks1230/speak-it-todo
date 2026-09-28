@@ -1,0 +1,3 @@
+-keepattributes *Annotation*
+-dontwarn kotlinx.serialization.**
+-keep class com.saym.phone.** { *; }

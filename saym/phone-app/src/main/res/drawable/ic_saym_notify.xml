@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通知小图标（Android 要求单色，系统会自行着色，所以只用白色描边形状）。
+  原来代码里用的 android.R.drawable.ic_dialog_info 在部分精简系统上观感很差，
+  这里换成自定义的对勾 + 列表图标。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 列表两条横线 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,6h12v2H3z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,11h8v2H3z" />
+    <!-- 对勾 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M20.6,7.2l1.4,1.4l-5.6,5.6l-3.2,-3.2l1.4,-1.4l1.8,1.8z" />
+</vector>

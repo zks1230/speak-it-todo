@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <!-- 移动端优先：viewport-fit=cover 适配刘海屏 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="说一嘴 · 待办提炼：随手丢进文字/图片，AI 自动提炼成结构化待办">
+  <meta name="theme-color" content="#2563eb">
+  <!-- iOS 全屏 PWA 支持 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="说一嘴">
+  <title>说一嘴 · 待办提炼</title>
+
+  <!-- PWA 清单（D10） -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <!-- Apple 触屏图标：直接用 192 PNG，避免引入外部资源 -->
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- ============ 顶栏 ============ -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">说</div>
+      <div class="brand-text">
+        <h1>说一嘴</h1>
+        <p>随手丢进来，AI 帮你提炼成待办</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="netStatus" class="pill pill-muted" title="后端连接状态">连接中…</span>
+      <button id="btnInstall" class="btn btn-ghost btn-sm hidden" type="button">安装到桌面</button>
+    </div>
+  </header>
+
+  <!-- ============ 主体：窄屏单列 / 宽屏两列 ============ -->
+  <main class="layout">
+
+    <!-- ================= F1 多模态输入 + F2 提炼预览 ================= -->
+    <section id="view-input" class="view active" aria-label="输入与提炼">
+      <div class="card">
+        <div class="card-head">
+          <h2>随手记一笔</h2>
+          <span class="tag">F1.2 / F1.3 / F1.1</span>
+        </div>
+
+        <!-- F1.2 文字输入（含批量粘贴：一段话里多条任务由 AI 拆分 F2.2） -->
+        <label class="field-label" for="textInput">文字输入</label>
+        <textarea id="textInput" rows="4" placeholder="例如：明天交数学卷子第三章，周五前把英语作文写完，还有物理实验报告下周一交"></textarea>
+        <div class="row row-between text-muted">
+          <span id="textCount">0 字</span>
+          <!-- F1.1 / D6 语音：仅在浏览器支持 Web Speech API 时显示（见 app.js） -->
+          <button id="btnMic" class="btn btn-ghost btn-sm hidden" type="button" title="语音输入">🎤 语音输入</button>
+        </div>
+
+        <!-- F1.3 图片输入：多选 + 拖拽 + 手机拍照 -->
+        <label class="field-label">图片输入（支持多选 / 拖拽 / 拍照）</label>
+        <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="拖拽图片到此处或点击选择">
+          <p class="dropzone-main">把通知截图 / 课件 / 黑板照片拖到这里</p>
+          <p class="dropzone-sub">前端会自动压缩到最长边 1280px、JPEG 0.8 后再上传</p>
+          <div class="row row-center gap-sm">
+            <button id="btnPick" class="btn btn-sm" type="button">选择图片</button>
+            <button id="btnCamera" class="btn btn-sm btn-ghost" type="button">拍照</button>
+          </div>
+          <input id="filePicker" class="hidden" type="file" accept="image/*" multiple>
+          <input id="cameraPicker" class="hidden" type="file" accept="image/*" capture="environment">
+        </div>
+        <ul id="imagePreview" class="thumb-list" aria-live="polite"></ul>
+
+        <div class="row gap-sm mt-md">
+          <button id="btnExtract" class="btn btn-primary" type="button">AI 提炼</button>
+          <button id="btnClear" class="btn btn-ghost" type="button">清空</button>
+        </div>
+      </div>
+
+      <!-- F2.5 提炼结果先预览再入库；F2.6 低置信度高亮 -->
+      <div id="draftCard" class="card hidden">
+        <div class="card-head">
+          <h2>提炼结果（先确认再入库）</h2>
+          <span class="tag">F2.5 / F2.6</span>
+        </div>
+        <p id="draftMeta" class="text-muted small"></p>
+        <div id="draftList" class="draft-list"></div>
+        <div class="row gap-sm mt-md">
+          <button id="btnSaveAll" class="btn btn-primary" type="button">全部入库</button>
+          <button id="btnReloadDrafts" class="btn btn-ghost" type="button">重新提炼</button>
+          <button id="btnDiscardDrafts" class="btn btn-ghost" type="button">丢弃</button>
+        </div>
+      </div>
+
+      <!-- F1.4 输入暂存：未处理可重提 -->
+      <div class="card">
+        <div class="card-head">
+          <h2>输入历史</h2>
+          <span class="tag">F1.4</span>
+        </div>
+        <p class="text-muted small">未处理输入保留 30 天，可一键重提；图片不存云端，故只能重提文字。</p>
+        <div id="inputHistory" class="history-list"></div>
+        <div class="row mt-md">
+          <button id="btnReloadInputs" class="btn btn-ghost btn-sm" type="button">刷新历史</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= F3.1 待办列表 ================= -->
+    <section id="view-todos" class="view" aria-label="待办列表">
+      <div class="card">
+        <div class="card-head">
+          <h2>待办</h2>
+          <span class="tag">F3.1 / F3.2 / F3.3</span>
+        </div>
+
+        <div id="todoTabs" class="tabs" role="tablist">
+          <button class="tab active" data-scope="today" role="tab" type="button">今日</button>
+          <button class="tab" data-scope="week" role="tab" type="button">本周</button>
+          <button class="tab" data-scope="overdue" role="tab" type="button">逾期</button>
+          <button class="tab" data-scope="all" role="tab" type="button">全部</button>
+        </div>
+
+        <div class="toolbar">
+          <label class="check-inline">
+            <input id="checkAll" type="checkbox">
+            <span>全选</span>
+          </label>
+          <button id="btnSelectMode" class="btn btn-sm btn-ghost" type="button" title="进入多选后可批量完成">多选</button>
+          <span id="selCount" class="text-muted small">已选 0 条</span>
+          <div class="row gap-sm">
+            <button id="btnBatchDone" class="btn btn-sm btn-primary" type="button">批量完成</button>
+            <button id="btnBatchUndo" class="btn btn-sm btn-ghost" type="button">取消完成</button>
+            <button id="btnReloadTodos" class="btn btn-sm btn-ghost" type="button">刷新</button>
+          </div>
+        </div>
+        <p class="text-muted small">取消「多选」时，每条的勾选框即为「完成」开关（F3.2）。</p>
+
+        <ul id="todoList" class="todo-list"></ul>
+        <p id="todoEmpty" class="empty hidden">这里还没有待办，先去「输入」页丢一条吧。</p>
+      </div>
+    </section>
+
+    <!-- ================= F3.8 完成率看板 ================= -->
+    <section id="view-stats" class="view" aria-label="完成率看板">
+      <div class="card">
+        <div class="card-head">
+          <h2>完成率看板</h2>
+          <span class="tag">F3.8 / D12</span>
+        </div>
+        <div id="statGrid" class="stat-grid">
+          <div class="stat-card"><span class="stat-num" id="statWeekDone">–</span><span class="stat-label">本周完成</span></div>
+          <div class="stat-card"><span class="stat-num" id="statWeekOverdue">–</span><span class="stat-label">本周逾期</span></div>
+          <div class="stat-card"><span class="stat-num" id="statStreak">–</span><span class="stat-label">连续完成天数</span></div>
+          <div class="stat-card"><span class="stat-num" id="statPending">–</span><span class="stat-label">待办总数</span></div>
+        </div>
+        <div class="progress-block">
+          <div class="row row-between">
+            <span class="text-muted small">本周完成率</span>
+            <strong id="statRate">–</strong>
+          </div>
+          <div class="progress"><div id="statRateBar" class="progress-bar" style="width:0%"></div></div>
+        </div>
+        <div class="row mt-md">
+          <button id="btnReloadStats" class="btn btn-ghost btn-sm" type="button">刷新看板</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 设置（F4.1 设备绑定 / F6 只读配置） ================= -->
+    <section id="view-settings" class="view" aria-label="设置">
+      <div class="card">
+        <div class="card-head">
+          <h2>连接设置</h2>
+          <span class="tag">F4.1</span>
+        </div>
+        <label class="field-label" for="baseUrlInput">后端地址（留空 = 同源）</label>
+        <input id="baseUrlInput" type="text" placeholder="留空表示同源；也可填 http://192.168.1.5:8080">
+        <div class="row gap-sm mt-sm">
+          <button id="btnSaveBase" class="btn btn-sm btn-primary" type="button">保存地址</button>
+          <button id="btnTestHealth" class="btn btn-sm btn-ghost" type="button">测试连接</button>
+        </div>
+        <p id="healthOut" class="text-muted small mt-sm">未测试</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>设备绑定</h2>
+          <span class="tag">F4.1</span>
+        </div>
+        <p class="text-muted small">纯自用免账号：用设备 ID 当身份，数据存云端 Neon，与手机端共享。</p>
+        <label class="field-label" for="deviceIdInput">设备 ID</label>
+        <input id="deviceIdInput" type="text">
+        <div class="row gap-sm mt-sm">
+          <button id="btnBindDevice" class="btn btn-sm btn-primary" type="button">绑定 / 更新</button>
+          <button id="btnRegenDevice" class="btn btn-sm btn-ghost" type="button">重新生成</button>
+        </div>
+        <p id="bindOut" class="text-muted small mt-sm">设备列表未加载</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>提醒规则（只读）</h2>
+          <span class="tag">F5.1 / F6.5</span>
+        </div>
+        <p id="pushInfo" class="text-muted small">未加载（来自 GET /api/config）</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>模型配置（只读）</h2>
+          <span class="tag">F6.2 / F6.3</span>
+        </div>
+        <p class="text-muted small">
+          出于安全，Web 端只展示「是否已配置」，不展示也不修改明文 Key。
+          写入配置需在手机端通过主密码门禁（F6.1 / D13）。
+        </p>
+        <div id="modelInfo" class="model-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>同步与离线</h2>
+          <span class="tag">F4.3 / F4.4</span>
+        </div>
+        <p id="lastSyncOut" class="text-muted small">上次同步：无记录</p>
+        <div class="row gap-sm mt-sm">
+          <button id="btnSyncNow" class="btn btn-sm btn-primary" type="button">立即同步</button>
+          <button id="btnClearLocal" class="btn btn-sm btn-ghost" type="button">清空本地缓存</button>
+          <button id="btnInstall2" class="btn btn-sm btn-ghost hidden" type="button">安装到桌面</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>关于</h2>
+        </div>
+        <p class="text-muted small">
+          说一嘴 Web/PWA（D10）· 离线可打开，接口请求一律走网络不缓存。<br>
+          页面与资源全部本地内置，无任何 CDN / 外部字体依赖。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 底部导航（移动端） ============ -->
+  <nav class="tabbar" aria-label="主导航">
+    <button class="tabbar-btn active" data-view="input" type="button"><span class="ico">✍️</span><span>输入</span></button>
+    <button class="tabbar-btn" data-view="todos" type="button"><span class="ico">✅</span><span>待办</span></button>
+    <button class="tabbar-btn" data-view="stats" type="button"><span class="ico">📊</span><span>看板</span></button>
+    <button class="tabbar-btn" data-view="settings" type="button"><span class="ico">⚙️</span><span>设置</span></button>
+  </nav>
+
+  <!-- ============ F3.3 编辑弹窗（内容由 app.js 填充） ============ -->
+  <div id="editModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-panel">
+      <div class="card-head">
+        <h2 id="editTitle">编辑待办</h2>
+        <button class="btn btn-ghost btn-sm" data-close="1" type="button">关闭</button>
+      </div>
+      <label class="field-label" for="editTitleInput">标题</label>
+      <input id="editTitleInput" type="text">
+      <label class="field-label" for="editDeadline">截止日期</label>
+      <input id="editDeadline" type="date">
+      <label class="field-label" for="editSubject">学科 / 分类</label>
+      <input id="editSubject" type="text" placeholder="数学 / 语文 / 其他">
+      <label class="field-label" for="editNotes">备注</label>
+      <textarea id="editNotes" rows="3"></textarea>
+      <label class="field-label" for="editRemindAt">定点提醒（关键任务，F5.2）</label>
+      <input id="editRemindAt" type="datetime-local">
+      <label class="field-label" for="editOffset">提前量（分钟，F5.3）</label>
+      <input id="editOffset" type="number" min="0" step="5" value="0">
+      <label class="check-inline mt-sm">
+        <input id="editKeyTask" type="checkbox">
+        <span>标记为关键任务</span>
+      </label>
+      <p class="text-muted small">留空截止日期 = 清除截止；留空定点提醒 = 清除提醒。</p>
+      <div class="row gap-sm mt-md">
+        <button id="btnEditSave" class="btn btn-primary" type="button">保存</button>
+        <button id="btnEditDelete" class="btn btn-danger-ghost" type="button">删除</button>
+        <button class="btn btn-ghost" data-close="1" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错误 / 提示条（所有网络失败都会在此显示，并带「重试」） -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button id="toastRetry" class="btn btn-sm btn-ghost hidden" type="button">重试</button>
+    <button id="toastClose" class="btn btn-sm btn-ghost" type="button">关闭</button>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

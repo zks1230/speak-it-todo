@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      主题：MaterialComponents + Light + NoActionBar。
+      用 NoActionBar 是因为各页自带标题栏（MaterialToolbar），避免出现"双标题"。
+    -->
+    <style name="Theme.Saym" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/saym_primary</item>
+        <item name="colorPrimaryVariant">@color/saym_primary_dark</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/saym_accent</item>
+        <item name="colorAccent">@color/saym_accent</item>
+        <item name="android:windowBackground">@color/saym_bg</item>
+        <item name="android:statusBarColor">@color/saym_primary_dark</item>
+        <item name="android:textColorPrimary">@color/saym_text</item>
+    </style>
+
+    <!-- 卡片：白底、圆角、极轻阴影，替代之前那种灰方块 -->
+    <style name="Saym.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="cardBackgroundColor">@color/saym_surface</item>
+        <item name="cardUseCompatPadding">true</item>
+    </style>
+
+    <!-- 主按钮 -->
+    <style name="Saym.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textSize">15sp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- 次按钮（描边） -->
+    <style name="Saym.Button.Outlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textSize">15sp</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="strokeColor">@color/saym_divider</item>
+        <item name="android:textColor">@color/saym_text</item>
+    </style>
+
+    <!-- 文字按钮 -->
+    <style name="Saym.Button.Text" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/saym_primary</item>
+    </style>
+
+    <!-- 小圆角标签（学科 / 来源 / 状态） -->
+    <style name="Saym.Chip" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/saym_primary</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">26dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- 输入框 -->
+    <style name="Saym.Field" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+</resources>

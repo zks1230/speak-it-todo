@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">说一嘴</string>
+
+    <!-- 首页 -->
+    <string name="input_entry">新输入（语音/文字/图片）→</string>
+    <string name="tab_today">今日</string>
+    <string name="tab_tomorrow">明日</string>
+    <string name="tab_week">本周</string>
+    <string name="tab_overdue">逾期</string>
+    <string name="tab_all">全部</string>
+    <string name="settings">设置</string>
+    <string name="empty_list">（无）</string>
+    <string name="complete">完成</string>
+    <string name="undo_complete">撤销</string>
+
+    <!-- 输入页 -->
+    <string name="input_title">输入待办</string>
+    <string name="input_tip">文字 / 语音（用输入法的麦克风）/ 图片</string>
+    <string name="input_hint">可批量粘贴，例：明天交数学卷子第三章，周五交英语作文</string>
+    <string name="extract">AI 提炼</string>
+    <string name="pick_images">相册多选</string>
+    <string name="take_photo">拍照</string>
+    <string name="drafts_label">提炼预览（点条目编辑 / 点入库保存）</string>
+    <string name="save_to_db">入库</string>
+    <string name="save_all_to_db">全部入库</string>
+
+    <!-- 通知渠道 -->
+    <string name="channel_daily_name">每日清单推送</string>
+    <string name="channel_daily_desc">每日固定时间提醒今天还剩哪些待办</string>
+    <string name="channel_key_name">关键任务提醒</string>
+    <string name="channel_key_desc">关键任务定点提醒，可设置提前量</string>
+    <string name="channel_lan_name">手表同步服务</string>
+    <string name="channel_lan_desc">在局域网内等待手表来同步待办（静默通知，可忽略）</string>
+
+    <!-- 通知内容 -->
+    <string name="notify_daily_title">今日待办</string>
+    <string name="notify_key_title">关键任务提醒</string>
+    <string name="lan_notify_title">手表同步已开启</string>
+    <string name="lan_notify_text">局域网地址 %1$s，端口 %2$d（同一 WiFi 下手表会自动找到）</string>
+
+    <!-- 配置中心 -->
+    <string name="config_title">设置</string>
+    <string name="save_config">保存设置</string>
+    <string name="tab_ai_models">AI 模型</string>
+    <string name="tab_routing">分流规则</string>
+    <string name="tab_remind">提醒</string>
+    <string name="tab_ai_params">参数</string>
+    <string name="tab_watch">手表配对</string>
+</resources>

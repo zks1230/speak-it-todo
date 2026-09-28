@@ -1,0 +1,44 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+*.hprof
+captures/
+
+# Kotlin
+*.class
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+**/keystore.jks
+**/keystore.properties
+
+# Tools (JDK, Android SDK, Gradle distribution)
+.tools/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

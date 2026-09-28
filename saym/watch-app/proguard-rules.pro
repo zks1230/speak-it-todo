@@ -1,0 +1,3 @@
+-keepattributes *Annotation*
+-keep class com.saym.watch.** { *; }
+-dontwarn org.jetbrains.annotations.**
